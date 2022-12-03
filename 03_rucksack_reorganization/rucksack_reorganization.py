@@ -16,7 +16,7 @@ def find_shared_item(rucksack: str) -> str:
 	return comp1.intersection(comp2).pop()
 
 def find_badge(group: list) -> str:
-	a,b,c = [set(g) for g in group]
+	a, b, c = [set(rucksack) for rucksack in group]
 	return a.intersection(b).intersection(c).pop()
 
 
