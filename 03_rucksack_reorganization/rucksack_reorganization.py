@@ -7,7 +7,7 @@ begin = time.time()
 
 ###
 
-ALL_ITEMS = list(string.ascii_lowercase) + list(string.ascii_uppercase)
+ALL_ITEMS = string.ascii_lowercase + string.ascii_uppercase
 PRIORITIES = {item: idx+1 for idx, item  in enumerate(ALL_ITEMS)}
 
 def find_shared_item(rucksack: str) -> str:
