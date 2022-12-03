@@ -25,7 +25,7 @@ with open("input.txt") as file:
 	rucksacks = [line.strip() for line in file.readlines()]
 
 shared_items = [find_shared_item(rucksack) for rucksack in rucksacks]
-elve_groups = np.reshape(rucksacks, (len(rucksacks)//3, 3))
+elve_groups = np.reshape(rucksacks, (-1, 3))
 badges = [find_badge(group) for group in elve_groups]
 
 print(f"Part 1: {sum(get_priority(item) for item in shared_items)}")
