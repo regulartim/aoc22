@@ -20,13 +20,13 @@ def parse_stacks(inp: str) -> list:
 
 
 with open("input.txt") as file:
-	stack_input, move_input = file.read().strip().split("\n\n")
+	stack_input, move_input = file.read().split("\n\n")
 
 stacks_p1 = parse_stacks(stack_input)
 stacks_p2 = parse_stacks(stack_input)
 moves = [[int(number) for number in re.findall(r"\d+", line)] for line in move_input.split("\n")]
 
-for n, source, target in moves:
+for n, source, target in moves[:-1]:
 	stacks_p1[target-1] += [stacks_p1[source-1].pop() for _ in range(n)]
 	stacks_p2[target-1] += reversed([stacks_p2[source-1].pop() for _ in range(n)])
 
