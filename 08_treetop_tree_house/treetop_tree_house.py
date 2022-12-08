@@ -6,14 +6,6 @@ begin = time.time()
 
 ###
 
-def viewing_distance(tree: int, trees_in_line: list) -> int:
-	viewing_dist = 0
-	for other in trees_in_line:
-		viewing_dist += 1
-		if other >= tree:
-			break
-	return viewing_dist
-
 def update_visibles(visibles: list, grid: list) -> list:
 	for x, line in enumerate(grid):
 		highest = -1
@@ -25,7 +17,9 @@ def update_visibles(visibles: list, grid: list) -> list:
 
 def update_scores(scores: list, grid: list) -> list:
 	for x, y in np.ndindex(grid.shape):
-		scores[x,y] *= viewing_distance(grid[x,y], grid[x,y+1:])
+		tree, los = grid[x,y], grid[x,y+1:]
+		viewing_dist = next((idx+1 for idx, other in enumerate(los) if other >= tree), len(los))
+		scores[x,y] *= viewing_dist
 	return scores
 
 
