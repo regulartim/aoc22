@@ -22,7 +22,7 @@ def follow_predecessor(point: tuple, predecessor: tuple) -> tuple:
 		point = move_point(point, "U" if y_diff < 0 else "D")
 	return point
 
-def get_visited_postions(knot_count: int) -> set:
+def get_visited_postions(motions: list, knot_count: int) -> set:
 	visited = set()
 	knots = [(0,0) for _ in range(knot_count)]
 	for direction, step_count in motions:
@@ -35,10 +35,10 @@ def get_visited_postions(knot_count: int) -> set:
 
 
 with open("input.txt") as file:
-	motions = [line.split() for line in file.readlines()]
+	motion_series = [line.split() for line in file.readlines()]
 
-print(f"Part 1: {len(get_visited_postions(2))}")
-print(f"Part 2: {len(get_visited_postions(10))}")
+print(f"Part 1: {len(get_visited_postions(motion_series, 2))}")
+print(f"Part 2: {len(get_visited_postions(motion_series, 10))}")
 
 ###
 
