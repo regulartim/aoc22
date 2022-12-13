@@ -14,11 +14,7 @@ def is_ordered(left, right) -> int:
 		case list(), int():
 			return is_ordered(left, [right])
 		case int(), int():
-			if left < right:
-				return 1
-			if left > right:
-				return -1
-			return 0
+			return 1 if left < right else -1 if left > right else 0
 
 	results = [is_ordered(*pair) for pair in zip(left, right)]
 	stop_default = -1 if len(left) > len(right) else 1 if len(left) < len(right) else 0
