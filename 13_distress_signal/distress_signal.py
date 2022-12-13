@@ -7,28 +7,28 @@ begin = time.time()
 
 DIVIDER_PACKETS = [[[2]],[[6]]]
 
-def is_ordered(left, right) -> int:
+def compare(left, right) -> int:
 	match left, right:
 		case int(), list():
-			return is_ordered([left], right)
+			return compare([left], right)
 		case list(), int():
-			return is_ordered(left, [right])
+			return compare(left, [right])
 		case int(), int():
-			return 1 if left < right else -1 if left > right else 0
-
-	results = [is_ordered(*pair) for pair in zip(left, right)]
-	stop_default = -1 if len(left) > len(right) else 1 if len(left) < len(right) else 0
-	return next((result for result in results if result != 0), stop_default)
+			return left - right
+		case list(), list():
+			child_results = (compare(*pair) for pair in zip(left, right))
+			stop_default = len(left) - len(right)
+			return next((res for res in child_results if res != 0), stop_default)
 
 
 with open("input.txt") as file:
 	packets = [ast.literal_eval(line.strip()) for line in file if line.strip()]
 
 pairs = [(packets[i], packets[i+1]) for i in range(0, len(packets), 2)]
-divider_indices = [sum(is_ordered(other, divider) == 1 for other in packets + DIVIDER_PACKETS) + 1
+divider_indices = [sum(compare(other, divider) < 0 for other in packets + DIVIDER_PACKETS) + 1
 					for divider in DIVIDER_PACKETS]
 
-print(f"Part 1: {sum(idx+1 for idx, pair in enumerate(pairs) if is_ordered(*pair) == 1)}")
+print(f"Part 1: {sum(idx+1 for idx, pair in enumerate(pairs) if compare(*pair) < 0)}")
 print(f"Part 2: {divider_indices[0] * divider_indices[1]}")
 
 ###
