@@ -1,4 +1,5 @@
-import re 
+import functools
+import re
 import time
 
 from itertools import combinations
@@ -14,7 +15,8 @@ STARTING_POSITION = "AA"
 P1_MINUTES, P2_MINUTES = 30, 26
 
 
-def dfs(position, minutes_left, valves_left):
+@functools.cache
+def dfs(position: str, minutes_left: int, valves_left: frozenset) -> int:
 	if minutes_left < 1:
 		return 0
 
@@ -40,16 +42,13 @@ for line in lines:
 	G.add_edges_from((valve, other) for other in others)
 	flow_rates[valve] = int(re.findall(r"\d+", line)[0])
 
-working_valves = {v for v, rate in flow_rates.items() if rate > 0}
-shortest_paths =  dict(nx.all_pairs_shortest_path(G))
+working_valves = frozenset(v for v, rate in flow_rates.items() if rate > 0)
+shortest_paths = dict(nx.all_pairs_shortest_path(G))
 
 p2_result = 0
 for my_valves in combinations(working_valves, len(working_valves)//2):
-	my_valves = set(my_valves)
+	my_valves = frozenset(my_valves)
 	elefants_valves = working_valves - my_valves
-	flow_ratio = sum(flow_rates[v] for v in my_valves) / sum(flow_rates[v] for v in elefants_valves)
-	if not 0.75 < flow_ratio < 1.5:
-		continue
 	my_release = dfs(STARTING_POSITION, P2_MINUTES, my_valves)
 	elefants_release = dfs(STARTING_POSITION, P2_MINUTES, elefants_valves)
 	p2_result = max((p2_result, my_release + elefants_release))
