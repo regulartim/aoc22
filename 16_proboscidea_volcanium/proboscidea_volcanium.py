@@ -27,10 +27,19 @@ def dfs(position: str, minutes_left: int, valves_left: frozenset) -> int:
 		return release
 
 	posibilities = []
-	for next_valve in valves_left:
-		distance = len(shortest_paths[position][next_valve]) - 1
-		posibilities.append(release + dfs(next_valve, minutes_left - distance, valves_left - {next_valve}))
+	for v in valves_left:
+		distance = len(shortest_paths[position][v]) - 1
+		posibilities.append(release + dfs(v, minutes_left - distance, valves_left - {v}))
 	return max(posibilities)
+
+def work_with_elefant(valves: frozenset) -> int:
+	max_release = -1
+	for my_valves in combinations(valves, len(valves)//2):
+		my_valves = frozenset(my_valves)
+		my_release = dfs(STARTING_POSITION, P2_MINUTES, my_valves)
+		ele_release = dfs(STARTING_POSITION, P2_MINUTES, valves - my_valves)
+		max_release = max((max_release, my_release + ele_release))
+	return max_release
 
 
 with open("input.txt") as file:
@@ -45,16 +54,8 @@ for line in lines:
 working_valves = frozenset(v for v, rate in flow_rates.items() if rate > 0)
 shortest_paths = dict(nx.all_pairs_shortest_path(G))
 
-p2_result = 0
-for my_valves in combinations(working_valves, len(working_valves)//2):
-	my_valves = frozenset(my_valves)
-	elefants_valves = working_valves - my_valves
-	my_release = dfs(STARTING_POSITION, P2_MINUTES, my_valves)
-	elefants_release = dfs(STARTING_POSITION, P2_MINUTES, elefants_valves)
-	p2_result = max((p2_result, my_release + elefants_release))
-
 print(f"Part 1: {dfs(STARTING_POSITION, P1_MINUTES, working_valves)}")
-print(f"Part 2: {p2_result}")
+print(f"Part 2: {work_with_elefant(working_valves)}")
 
 ###
 
