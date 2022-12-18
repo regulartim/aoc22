@@ -1,6 +1,6 @@
 import time
 
-import networkx as nx
+from collections import deque
 
 begin = time.time()
 
@@ -13,35 +13,35 @@ def get_neighbors(x: int, y: int, z: int) -> tuple:
 		(x,y,z-1),(x,y,z+1)
 	)
 
-def build_graph(cubes: set):
-	G = nx.Graph()
-	for cube in cubes:
-		for air in get_surface(cube, cubes):
-			G.add_edges_from((air, other) for other in get_surface(air, cubes))
-	return G
-
-def get_surface(cube: tuple, others: set) -> list:
+def get_adjacent_air(cube: tuple, others: set) -> list:
 	return [n for n in get_neighbors(*cube) if n not in others]
 
-def count_outside_facing_sides(outside_point: tuple, cubes: set, graph) -> int:
-	acc = 0
-	for cube in cubes:
-		for air in get_surface(cube, cubes):
-			if air not in graph:
+def count_ext_surface(start: tuple, lower_bound: int, upper_bound: int, cubes: set) -> int:
+	q = deque([start])
+	seen = {start}
+	ext_surface_count = 0
+	while q:
+		adjacent_air = get_adjacent_air(q.pop(), cubes)
+		ext_surface_count += 6 - len(adjacent_air)
+		for cube in adjacent_air:
+			if cube in seen or min(cube) < lower_bound or max(cube) > upper_bound:
 				continue
-			acc += nx.has_path(graph, outside_point, air)
-	return acc
+			q.appendleft(cube)
+			seen.add(cube)
+	return ext_surface_count
 
 
 with open("input.txt") as file:
 	lines = {tuple(int(n) for n in line.strip().split(",")) for line in file}
 
-leftmost_cube = min(lines)
-outside = (leftmost_cube[0]-1, *leftmost_cube[1:])
-air_graph = build_graph(lines)
+min_value = min(min(dim for dim in cube) for cube in lines)
+max_value = max(max(dim for dim in cube) for cube in lines)
 
-print(f"Part 1: {sum(len(get_surface(cube, lines)) for cube in lines)}")
-print(f"Part 2: {count_outside_facing_sides(outside, lines, air_graph)}")
+leftmost_cube = min(lines)
+outside_cube = (leftmost_cube[0]-1, *leftmost_cube[1:])
+
+print(f"Part 1: {sum(len(get_adjacent_air(cube, lines)) for cube in lines)}")
+print(f"Part 2: {count_ext_surface(outside_cube, min_value-1, max_value+1, lines)}")
 
 ###
 
