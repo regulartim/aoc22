@@ -4,6 +4,13 @@ begin = time.time()
 
 ###
 
+OPERATIONS = {
+	"+": lambda a, b: a + b,
+	"-": lambda a, b: a - b,
+	"*": lambda a, b: a * b,
+	"/": lambda a, b: a // b,
+}
+
 class Node:
 	def __init__(self, name: str):
 		self.name = name
@@ -14,15 +21,7 @@ class Node:
 	def evaluate(self) -> int:
 		if self.value > 0:
 			return self.value
-		match self.operation:
-			case "+":
-				return self.children[0].evaluate() + self.children[1].evaluate()
-			case "-":
-				return self.children[0].evaluate() - self.children[1].evaluate()
-			case "*":
-				return self.children[0].evaluate() * self.children[1].evaluate()
-			case "/":
-				return self.children[0].evaluate() // self.children[1].evaluate()
+		return OPERATIONS[self.operation](self.children[0].evaluate(), self.children[1].evaluate())
 
 	def balance(self) -> int:
 		left_result = self.children[0].evaluate()
