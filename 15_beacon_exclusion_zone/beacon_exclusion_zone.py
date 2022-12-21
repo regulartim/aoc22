@@ -1,6 +1,8 @@
 import re 
 import time
 
+import z3
+
 begin = time.time()
 
 ###
@@ -30,11 +32,21 @@ def get_coverage_interval(report: list, distances: list, y: int) -> tuple:
 	row_coverages = [get_row_coverage(line[:2], dist, y) for line, dist in zip(report, distances)]
 	return merge_intervals([i for i in row_coverages if i])
 
-def find_interval_gap(report: list, distances: list) -> tuple:
-	for y in range(P1_Y_IDX * 2):
-		coverage_interval = get_coverage_interval(report, distances, y)
-		if coverage_interval[1] < P1_Y_IDX * 2:
-			return coverage_interval[1] + 1, y
+def find_distress_beacon(report: list, distances: list) -> tuple:
+	x = z3.Int("x")
+	y = z3.Int("y")
+	solver = z3.Solver()
+
+	solver.add(0 < x, x < P1_Y_IDX * 2)
+	solver.add(0 < y, y < P1_Y_IDX * 2)
+
+	z3abs = lambda x: z3.If(x<0, -x, x)
+	for r, dist in zip(report, distances):
+		sx, sy, *_ = r
+		solver.add(z3abs(sx-x) + z3abs(sy-y) > dist)
+	solver.check()
+	model = solver.model()
+	return model[x].as_long(), model[y].as_long()
 
 
 with open("input.txt") as file:
@@ -45,10 +57,10 @@ coverage_start, coverage_stop = get_coverage_interval(sensors_report, beacon_dis
 beacons_in_row = set(line[2] for line in sensors_report if line[3] == P1_Y_IDX)
 blocked_postions = abs(coverage_start - coverage_stop) + 1 - len(beacons_in_row)
 
-gap_x, gap_y = find_interval_gap(sensors_report, beacon_distances)
+distress_x, distress_y = find_distress_beacon(sensors_report, beacon_distances)
 
 print(f"Part 1: {blocked_postions}")
-print(f"Part 2: {gap_x * 4000000 + gap_y}")
+print(f"Part 2: {distress_x * 4000000 + distress_y}")
 
 ###
 
