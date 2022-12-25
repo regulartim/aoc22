@@ -4,9 +4,6 @@ begin = time.time()
 
 ###
 
-def add(a: list, b: list) -> list:
-	pass
-
 def snafu_to_int(snafu_number: str):
 	acc = 0
 	for idx, digit in enumerate(reversed(snafu_number)):
