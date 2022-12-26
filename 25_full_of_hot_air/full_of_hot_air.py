@@ -18,20 +18,20 @@ def snafu_add(a: list, b: list, carry=0) -> list:
 		return [carry] if carry else []
 
 	if not a:
-		return snafu_add([carry], b)
+		return snafu_add(b, [carry])
 
 	if not b:
 		return snafu_add(a, [carry])
 
-	digit_sum = a[0] + b[0] + carry
+	digit_sum = a[-1] + b[-1] + carry
 	carry = int(digit_sum > 2) - int(digit_sum < -2)
-	return [digit_sum - 5*carry] + snafu_add(a[1:], b[1:], carry)
+	return snafu_add(a[:-1], b[:-1], carry) + [digit_sum - 5*carry]
 
 def snafu_sum(numbers: list) -> str:
 	acc = [0]
 	for snafu in numbers:
-		acc = snafu_add(acc, [SNAFU_DIGITS[char] for char in reversed(snafu)])
-	return "".join(str(n) for n in reversed(acc)).replace("-1", "-").replace("-2", "=")
+		acc = snafu_add(acc, [SNAFU_DIGITS[char] for char in snafu])
+	return "".join(str(n) for n in acc).replace("-1", "-").replace("-2", "=")
 
 
 with open("input.txt") as file:
