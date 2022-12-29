@@ -17,30 +17,27 @@ P1_MINUTES, P2_MINUTES = 30, 26
 
 @functools.cache
 def dfs(position: str, minutes_left: int, valves_left: frozenset) -> int:
-	if minutes_left < 1:
-		return 0
-
-	release = flow_rates[position] * (minutes_left-1)
-	minutes_left -= release > 0
-
-	if not valves_left:
-		return release
-
-	posibilities = []
+	best_result = 0
 	for v in valves_left:
-		distance = len(shortest_paths[position][v]) - 1
-		posibilities.append(release + dfs(v, minutes_left - distance, valves_left - {v}))
-	return max(posibilities)
+		time_delta = minutes_left - shortest_path_lengths[(position,v)]
+		if time_delta < 1:
+			continue
+		release = flow_rates[v] * time_delta
+		path_release = dfs(v, time_delta, valves_left - {v})
+		result = path_release + release
+		best_result = max([result, best_result])
+	return best_result
 
 def work_with_elefant(valves: frozenset) -> int:
-	max_release = -1
-	for my_valves in combinations(valves, len(valves)//2):
+	max_release = 0
+	for my_valves in combinations(valves, len(valves) // 2):
 		my_valves = frozenset(my_valves)
 		my_release = dfs(STARTING_POSITION, P2_MINUTES, my_valves)
+		if my_release < max_release // 2:
+			continue
 		ele_release = dfs(STARTING_POSITION, P2_MINUTES, valves - my_valves)
 		max_release = max((max_release, my_release + ele_release))
 	return max_release
-
 
 with open("input.txt") as file:
 	lines = [line.strip() for line in file]
@@ -52,7 +49,11 @@ for line in lines:
 	flow_rates[valve] = int(re.findall(r"\d+", line)[0])
 
 working_valves = frozenset(v for v, rate in flow_rates.items() if rate > 0)
-shortest_paths = dict(nx.all_pairs_shortest_path(G))
+
+shortest_path_lengths = {}
+for start, targets in nx.all_pairs_shortest_path(G):
+	for target, path in targets.items():
+		shortest_path_lengths[(start, target)] = len(path)
 
 print(f"Part 1: {dfs(STARTING_POSITION, P1_MINUTES, working_valves)}")
 print(f"Part 2: {work_with_elefant(working_valves)}")
