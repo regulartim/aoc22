@@ -7,57 +7,40 @@ begin = time.time()
 
 ###
 
-NEIGHBOURHOOD = [(0,0),(0,1),(1,0),(-1,0),(0,-1)]
+NEIGHBOURHOOD = ((0,0),(0,1),(1,0),(-1,0),(0,-1))
 
-@cache
+
 def manhattan_dist(a: tuple, b: tuple) -> int:
 	return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 @cache
-def blizzards_at(minute: int):
-	goal = max(GROUND)
-	x_limit, y_limit = goal[0]+1, goal[1]
-	result = set()
-	for x, y, dir_char in BLIZZARDS:
-		match dir_char:
-			case ">":
-				dx, dy = minute, 0
-			case "<":
-				dx, dy = -minute, 0
-			case "v":
-				dx, dy = 0, minute
-			case "^":
-				dx, dy = 0, -minute
-		new_pos = ((x+dx)%x_limit, (y+dy)%y_limit)
-		result.add(new_pos)
-	return frozenset(result)
+def blizzards_at(minute: int) -> frozenset:
+	max_x, max_y = GOAL[0]+1, GOAL[1]
+	return frozenset(((x + dx*minute) % max_x, (y + dy*minute) % max_y) for x, y, dx, dy in BLIZZARDS)
 
-@cache
-def get_neighbours(point: tuple, minute) -> list:
-	result = []
-	coming_blizzards = blizzards_at(minute+1)
-	for d in NEIGHBOURHOOD:
-		neighbour = (point[0] + d[0], point[1] + d[1])
+def get_neighbours(point: tuple, minute: int) -> list:
+	coming_blizzards = blizzards_at(minute + 1)
+	for delta in NEIGHBOURHOOD:
+		neighbour = (point[0] + delta[0], point[1] + delta[1])
 		if neighbour not in GROUND:
 			continue
 		if neighbour in coming_blizzards:
 			continue
-		result.append(neighbour)
-	return result
+		yield neighbour
 
 def a_star(start: tuple, at_minute: int, target: tuple) -> int:
 	q = [(manhattan_dist(start, target), at_minute, start)]
 	heapq.heapify(q)
 	seen = {(start, at_minute)}
 	while q:
-		_, dist, point = heapq.heappop(q)
+		_, minute, point = heapq.heappop(q)
 		if point == target:
-			return dist
-		for neighbour in get_neighbours(point, dist):
-			if (neighbour, dist+1) in seen:
+			return minute
+		for neighbour in get_neighbours(point, minute):
+			if (neighbour, minute+1) in seen:
 				continue
-			seen.add((neighbour, dist+1))
-			heapq.heappush(q, (dist+1 + manhattan_dist(neighbour, target), dist+1, neighbour))
+			seen.add((neighbour, minute+1))
+			heapq.heappush(q, (minute+1 + manhattan_dist(neighbour, target), minute+1, neighbour))
 
 
 with open("input.txt") as file:
@@ -66,20 +49,30 @@ with open("input.txt") as file:
 ground, blizzards = [], []
 for y_idx, line in enumerate(lines):
 	for x_idx, char in enumerate(line):
-		if char == "#":
-			continue
-		if char != ".":
-			blizzards.append((x_idx-1, y_idx-1, char))
+		match char:
+			case ".":
+				pass
+			case ">":
+				blizzards.append((x_idx-1, y_idx-1, 1, 0))
+			case "<":
+				blizzards.append((x_idx-1, y_idx-1, -1, 0))
+			case "v":
+				blizzards.append((x_idx-1, y_idx-1, 0, 1))
+			case "^":
+				blizzards.append((x_idx-1, y_idx-1, 0, -1))
+			case _:
+				continue
 		ground.append((x_idx-1, y_idx-1))
 
 GROUND, BLIZZARDS = frozenset(ground), frozenset(blizzards)
+START, GOAL = min(ground), max(ground)
 
-start_to_target = a_star(min(ground), 0, max(ground))
-back_to_start = a_star(max(ground), start_to_target, min(ground))
-back_to_target = a_star(min(ground), back_to_start, max(ground))
+start_to_goal = a_star(START, 0, GOAL)
+back_to_start = a_star(GOAL, start_to_goal, START)
+back_to_goal = a_star(START, back_to_start, GOAL)
 
-print(f"Part 1: {start_to_target}")
-print(f"Part 2: {back_to_target}")
+print(f"Part 1: {start_to_goal}")
+print(f"Part 2: {back_to_goal}")
 
 ###
 
