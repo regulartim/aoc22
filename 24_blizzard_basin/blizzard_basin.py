@@ -18,7 +18,7 @@ def blizzards_at(minute: int) -> frozenset:
 	max_x, max_y = GOAL[0]+1, GOAL[1]
 	return frozenset(((x + dx*minute) % max_x, (y + dy*minute) % max_y) for x, y, dx, dy in BLIZZARDS)
 
-def get_neighbours(point: tuple, minute: int) -> list:
+def get_neighbours(point: tuple, minute: int):
 	coming_blizzards = blizzards_at(minute + 1)
 	for delta in NEIGHBOURHOOD:
 		neighbour = (point[0] + delta[0], point[1] + delta[1])
